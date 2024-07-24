@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -153,10 +154,14 @@ CORS_ALLOWED_ORIGINS = [
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
+   
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
     ],
 }
 # E_Backend/settings.py
@@ -164,3 +169,4 @@ REST_FRAMEWORK = {
 # Replace any reference to CustomUser with the default user model
 AUTH_USER_MODEL = 'auth.User'
 AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = '/accounts/login/'  # Ensure this matches your URL configuration

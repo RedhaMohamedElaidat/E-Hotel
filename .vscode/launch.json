@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "e_hotel",
+            "cwd": "e_hotel",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "e_hotel (profile mode)",
+            "cwd": "e_hotel",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "e_hotel (release mode)",
+            "cwd": "e_hotel",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

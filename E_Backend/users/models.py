@@ -1,4 +1,5 @@
 # users/models.py
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -35,3 +36,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    def get_full_name(self):
+        # Assuming you have first_name and last_name fields
+        return f"{self.full_name} {self.phone_number} {self.email}"
