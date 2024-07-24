@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:e_hotel/Home/home.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:e_hotel/Profil/profil.dart';
 import 'package:random_string/random_string.dart';
 
 class Login extends StatefulWidget {
@@ -12,30 +15,49 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final storage = FlutterSecureStorage();
 
-  void loginUser(String username, String password) async {
-    final url = 'http://127.0.0.1:8000/login/';
 
+Future<void> login(String email, String password) async {
+  final url = 'http://127.0.0.1:8000/login/';
+  try {
     final response = await http.post(
       Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'username': username,
-        'password': password,
-      }),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
     );
 
     if (response.statusCode == 200) {
-      print('Login successful: ${response.body}');
-      // Navigate to home screen or next screen upon successful login
+      final jsonResponse = json.decode(response.body);
+
+      // Print response to verify structure
+      print('Response body: $jsonResponse');
+
+      final token = jsonResponse['token'];
+      final user = jsonResponse['user'];
+
+      // Ensure 'user' is not null
+      if (user != null) {
+        await storage.write(key: 'access_token', value: token);
+        await storage.write(key: 'full_name', value: user['full_name']);
+        await storage.write(key: 'email', value: user['email']);
+        await storage.write(key: 'phone_number', value: user['phone_number']);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else {
+        print('User object is null');
+      }
     } else {
-      print('Login failed: ${response.body}');
-      // Show error message or handle login failure
+      print('Failed to login: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error logging in: $e');
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +100,9 @@ class _LoginState extends State<Login> {
                   ),
                   SizedBox(height: 35),
                   TextFormField(
-                    controller: _usernameController,
+                    controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: "Username",
+                      labelText: "Email",
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -96,9 +118,9 @@ class _LoginState extends State<Login> {
                   SizedBox(height: 30),
                   MaterialButton(
                     onPressed: () {
-                      String username = _usernameController.text.trim();
+                      String email = _emailController.text.trim();
                       String password = _passwordController.text.trim();
-                      loginUser(username, password); // Call login function
+                      login(email, password);
                     },
                     minWidth: double.infinity,
                     height: 60,
@@ -175,17 +197,17 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
 
   Future<void> sendVerificationCode(String email, String code) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/send-verification-code/'), // Replace with your actual endpoint
+      Uri.parse('http://127.0.0.1:8000/send-verification-code/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'code': code}),
     );
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Verification code sent to your email')));
+          SnackBar(content: Text('Verification code sent to your email')));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send verification code')));
+          SnackBar(content: Text('Failed to send verification code')));
     }
   }
 
@@ -215,7 +237,8 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
           onPressed: () {
             verificationCode = randomAlphaNumeric(6);
             sendVerificationCode(_emailController.text, verificationCode!);
-            print('Verification code sent to ${_emailController.text}: $verificationCode');
+            print(
+                'Verification code sent to ${_emailController.text}: $verificationCode');
           },
           child: Text('Send Code'),
         ),
@@ -232,40 +255,20 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Invalid verification code')));
+                  SnackBar(content: Text('Invalid verification code')));
             }
           },
-          child: Text(
-            'Next',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.brown,
-            side: BorderSide(color: Colors.transparent),
-            shadowColor: Colors.black,
-          ),
+          child: Text('Verify'),
         ),
       ],
     );
   }
 }
 
-class ResetPasswordScreen extends StatefulWidget {
+class ResetPasswordScreen extends StatelessWidget {
   final String email;
 
-  ResetPasswordScreen({required this.email});
-
-  @override
-  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
-}
-
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  String? newPassword;
+  const ResetPasswordScreen({required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -273,55 +276,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       appBar: AppBar(
         title: Text('Reset Password'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _newPasswordController,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-              ),
-              obscureText: true,
-            ),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Confirm New Password',
-              ),
-              obscureText: true,
-            ),
+            Text('Reset Password for $email'),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                if (_newPasswordController.text ==
-                    _confirmPasswordController.text) {
-                  setState(() {
-                    newPassword = _newPasswordController.text;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Password updated successfully')));
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Passwords do not match')));
-                }
+                Navigator.pop(context);
               },
-              child: Text(
-                'Update',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                backgroundColor: Colors.brown,
-                side: BorderSide(color: Colors.transparent),
-                shadowColor: Colors.black,
-              ),
+              child: Text('Back to Login'),
             ),
           ],
         ),

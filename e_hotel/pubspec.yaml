@@ -27,7 +27,7 @@ dev_dependencies:
   test_api: ^0.6.1
   vm_service: ^13.0.0
   mailer: ^5.2.0
-
+  flutter_secure_storage: ^9.2.2
 dependency_overrides:
   meta: ^1.11.0  # Override the version of meta required by flutter_test to match leak_tracker_testing
 

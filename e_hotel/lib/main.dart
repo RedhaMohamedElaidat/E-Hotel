@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:e_hotel/Log in/login.dart';
 import 'package:e_hotel/Sign Up/signup.dart';
+
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -22,7 +23,7 @@ class _MAINState extends State<MAIN> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(seconds: 30), (Timer timer) {
+    _timer = Timer.periodic(Duration(seconds: 15), (Timer timer) {
       if (_currentPage < 3) {
         _currentPage++;
       } else {
@@ -30,7 +31,7 @@ class _MAINState extends State<MAIN> {
       }
       _pageController.animateToPage(
         _currentPage,
-        duration: Duration(milliseconds: 300),
+        duration: Duration(milliseconds: 120),
         curve: Curves.easeIn,
       );
     });
@@ -46,7 +47,8 @@ class _MAINState extends State<MAIN> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.brown[50], // Set background color to maroon accent
+      backgroundColor:
+          Colors.brown[50], // Set background color to maroon accent
       body: SafeArea(
         child: Column(
           children: <Widget>[
@@ -99,8 +101,11 @@ class _MAINState extends State<MAIN> {
                         minWidth: double.infinity,
                         height: 60,
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                              Login()), // Navigate to EditProfileScreen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    Login()), // Navigate to EditProfileScreen
                           );
                         },
                         shape: RoundedRectangleBorder(
@@ -117,9 +122,12 @@ class _MAINState extends State<MAIN> {
                       ),
                       SizedBox(height: 20),
                       MaterialButton(
-                        onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                            Signup()),);
-                          },
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Signup()),
+                          );
+                        },
                         minWidth: double.infinity,
                         height: 60,
                         color: Colors.brown,
